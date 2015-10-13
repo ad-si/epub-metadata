@@ -50,8 +50,6 @@ module.exports = function (epubPath) {
 
 			delete metadata.identifier
 
-			console.log(metadata);
-
 			return metadata
 		})
 		.catch(function (error) {
