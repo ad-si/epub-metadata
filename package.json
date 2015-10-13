@@ -1,0 +1,25 @@
+{
+  "name": "epub-metadata",
+  "version": "0.0.0",
+  "description": "Reads metadata from epub files",
+  "main": "source/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adius/epub-metadata.git"
+  },
+  "keywords": [
+    "epub"
+  ],
+  "author": "Adrian Sieber",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adius/epub-metadata/issues"
+  },
+  "homepage": "https://github.com/adius/epub-metadata#readme",
+  "dependencies": {
+    "fs-promise": "^0.3.1",
+    "jszip": "^2.5.0",
+    "xml-mapping": "^1.7.0"
+  }
+}
