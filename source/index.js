@@ -1,6 +1,56 @@
-var fsp = require('fs-promise'),
+var path = require('path'),
+
+	fsp = require('fs-promise'),
 	JsZip = require('jszip'),
 	xmlMapping = require('xml-mapping')
+
+
+function cleanUpMetadata (key, value) {
+	// Remove namespace part from keys
+	if (typeof key === 'string' && /\$/.test(key)) {
+		var newKey = key.split('$')[1]
+		this[newKey] = value
+		delete this[key]
+		key = newKey
+	}
+
+	// Make text property the actual value
+	if (value.hasOwnProperty('$text') &&
+		Object.keys(value).length === 1) {
+		this[key] = value.$text
+	}
+
+	return value
+}
+
+function loadDcMetadata (json, metadata) {
+	for (var key in json.package.metadata) {
+		if (key.search('dc') === 0) {
+			!function () {
+				var newKey = key.replace(/^dc\$/, '')
+				metadata[newKey] = json.package.metadata[key]
+			}()
+		}
+	}
+}
+
+function rewriteMetaElements (json) {
+	json.package.metadata.meta.forEach(function (meta) {
+		json.package.metadata['dc$' + meta.name] = meta.content
+	})
+	delete json.package.metadata.meta
+}
+
+function getCoverImagePath (contentPath, coverId, json) {
+	var href = ''
+	json.package.manifest.item.some(function (item) {
+		if (item.id === coverId) {
+			href = path.join(contentPath, '..', item.href)
+			return true
+		}
+	})
+	return href
+}
 
 module.exports = function (epubPath) {
 
@@ -14,12 +64,13 @@ module.exports = function (epubPath) {
 					'content.opf',
 					'OEBPS/content.opf'
 				],
+				contentPath,
 				json,
-				key,
 				xml
 
-			contentPaths.some(function (contentPath) {
-				xml = epub.file(contentPath)
+			contentPaths.some(function (contentFilePath) {
+				xml = epub.file(contentFilePath)
+				contentPath = contentFilePath
 				return Boolean(xml)
 			})
 
@@ -31,29 +82,9 @@ module.exports = function (epubPath) {
 
 			json = xmlMapping.load(xml.asText(), {longTag: true})
 
-			for (key in json.package.metadata) {
-				if (key.search('dc') === 0)
-					metadata[key.replace(/^dc\$/, '')] = json
-						.package.metadata[key]
-			}
+			rewriteMetaElements(json)
 
-			function cleanUpMetadata (key, value) {
-				// Remove namespace part from keys
-				if (typeof key === 'string' && /\$/.test(key)) {
-					var newKey = key.split('$')[1]
-					this[newKey] = value
-					delete this[key]
-					key = newKey
-				}
-
-				// Make text property the actual value
-				if (value.hasOwnProperty('$text') &&
-					Object.keys(value).length === 1) {
-					this[key] = value.$text
-				}
-
-				return value
-			}
+			loadDcMetadata(json, metadata)
 
 			// This is a little hack to iterate recursively over an object
 			JSON.stringify(metadata, cleanUpMetadata)
@@ -67,6 +98,12 @@ module.exports = function (epubPath) {
 			})
 
 			delete metadata.identifier
+
+			metadata.coverPath = getCoverImagePath(
+				contentPath,
+				metadata.cover,
+				json
+			)
 
 			return metadata
 		})
