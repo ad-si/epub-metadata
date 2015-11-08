@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "Reads metadata from epub files",
   "main": "source/index.js",
+  "bin": "source/cli.js",
   "scripts": {},
   "repository": {
     "type": "git",
