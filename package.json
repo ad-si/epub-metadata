@@ -1,16 +1,40 @@
 {
   "name": "epub-metadata",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reads metadata from epub files",
-  "main": "source/index.js",
-  "bin": "source/cli.js",
-  "scripts": {},
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "epub-metadata": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "source"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "typecheck": "tsc --noEmit"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/adius/epub-metadata.git"
   },
   "keywords": [
-    "epub"
+    "epub",
+    "metadata",
+    "ebook"
   ],
   "author": "Adrian Sieber",
   "license": "MIT",
@@ -19,8 +43,11 @@
   },
   "homepage": "https://github.com/adius/epub-metadata#readme",
   "dependencies": {
-    "fs-promise": "^0.3.1",
-    "jszip": "^2.5.0",
-    "xml-mapping": "^1.7.0"
+    "fast-xml-parser": "^4.5.0",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
   }
 }
