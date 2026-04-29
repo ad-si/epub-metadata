@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "epub-metadata": "./dist/cli.js"
+    "epub-metadata": "dist/cli.js"
   },
   "exports": {
     ".": {
