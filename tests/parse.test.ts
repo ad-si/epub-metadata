@@ -4,7 +4,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import JSZip from "jszip"
-import { readEpubMetadata } from "../dist/index.js"
+import { readEpubMetadata } from "../source/index.ts"
 
 const containerXml = `<?xml version="1.0"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
@@ -29,7 +29,10 @@ const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
   </manifest>
 </package>`
 
-async function withEpub(buildZip, fn) {
+async function withEpub(
+  buildZip: (zip: JSZip) => void,
+  fn: (epubPath: string) => Promise<void>,
+): Promise<void> {
   const zip = new JSZip()
   zip.file("mimetype", "application/epub+zip")
   buildZip(zip)
@@ -39,7 +42,7 @@ async function withEpub(buildZip, fn) {
   const file = path.join(dir, "test.epub")
   await writeFile(file, buffer)
   try {
-    return await fn(file)
+    await fn(file)
   } finally {
     await rm(dir, { recursive: true, force: true })
   }

@@ -13,8 +13,8 @@ build: ## Compile TypeScript to dist/
 typecheck: ## Type-check without emitting
 	npm run typecheck
 
-test: build ## Run the test suite
-	node --test 'tests/**/*.test.js'
+test: ## Run the test suite
+	node --test 'tests/**/*.test.ts'
 
 clean: ## Remove build artifacts
 	npm run clean

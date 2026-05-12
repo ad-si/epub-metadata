@@ -22,11 +22,11 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "npm run build && node --test 'tests/**/*.test.js'",
-    "typecheck": "tsc --noEmit"
+    "test": "node --test 'tests/**/*.test.ts'",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "repository": {
     "type": "git",
