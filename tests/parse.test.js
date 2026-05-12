@@ -93,3 +93,68 @@ test("throws when no content.opf can be located", async () => {
     },
   )
 })
+
+// Regression test for https://github.com/ad-si/epub-metadata/issues/1
+// — a bare <dc:identifier> with no scheme used to throw
+// "Cannot read property 'toLowerCase' of undefined".
+test("tolerates <dc:identifier> entries that omit the scheme attribute", async () => {
+  const opf = `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="bookid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>Bare Identifier Book</dc:title>
+    <dc:identifier id="bookid">urn:isbn:9780000000000</dc:identifier>
+  </metadata>
+  <manifest/>
+</package>`
+  await withEpub(
+    (zip) => {
+      zip.file("META-INF/container.xml", containerXml)
+      zip.file("OEBPS/content.opf", opf)
+    },
+    async (file) => {
+      const metadata = await readEpubMetadata(file)
+      assert.equal(metadata.title, "Bare Identifier Book")
+    },
+  )
+})
+
+test("rejects (does not throw) when the file is not a valid zip", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "epub-test-"))
+  const file = path.join(dir, "broken.epub")
+  await writeFile(file, "not actually a zip")
+  try {
+    await assert.rejects(readEpubMetadata(file))
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
+test("rejects (does not throw) when the file does not exist", async () => {
+  await assert.rejects(readEpubMetadata("/no/such/path.epub"), {
+    code: "ENOENT",
+  })
+})
+
+test("does not crash when the cover manifest item is missing href", async () => {
+  const opf = `<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="bookid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>Missing Href Book</dc:title>
+    <meta name="cover" content="cover-image"/>
+  </metadata>
+  <manifest>
+    <item id="cover-image" media-type="image/jpeg"/>
+  </manifest>
+</package>`
+  await withEpub(
+    (zip) => {
+      zip.file("META-INF/container.xml", containerXml)
+      zip.file("OEBPS/content.opf", opf)
+    },
+    async (file) => {
+      const metadata = await readEpubMetadata(file)
+      assert.equal(metadata.title, "Missing Href Book")
+      assert.equal(metadata.coverPath, undefined)
+    },
+  )
+})

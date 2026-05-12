@@ -87,8 +87,8 @@ function resolveCoverPath(
   manifestItems: ManifestItem[],
 ): string | undefined {
   if (!coverId) return undefined
-  const item = manifestItems.find((entry) => entry.id === coverId)
-  if (!item) return undefined
+  const item = manifestItems.find((entry) => entry?.id === coverId)
+  if (!item || typeof item.href !== "string") return undefined
   return path.posix.join(path.posix.dirname(contentPath), item.href)
 }
 
