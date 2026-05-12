@@ -1,6 +1,6 @@
 {
   "name": "epub-metadata",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reads metadata from epub files",
   "type": "module",
   "main": "./dist/index.js",
